@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,10 +9,8 @@
 
   <style>
     :root{
-      /* HIGH CONTRAST THEME (light bg, dark text) */
       --bg:#ffffff;
       --panel:#ffffff;
-      --panel-2:#ffffff;
       --stroke:#000000;
 
       --text:#0a0a0a;
@@ -20,8 +19,15 @@
       --accent:#0057ff;
       --accent2:#7c3aed;
 
-      --shadow:none;
-      --radius:0px;
+      --radius:18px;
+      --max:1100px;
+
+      --gutter: clamp(16px, 3vw, 24px);
+
+      --nav-collapsed: 68px;
+      --nav-expanded: 240px;
+
+      --mnav-h: 72px;
     }
 
     *{box-sizing:border-box}
@@ -34,18 +40,31 @@
       color: var(--text);
       line-height:1.65;
       overflow-x:hidden;
+      -webkit-text-size-adjust: 100%;
+      text-rendering: optimizeLegibility;
     }
 
     a{color:inherit; text-decoration:none}
+    img{max-width:100%; height:auto}
 
-    /* --- floating blobs --- */
+    :focus-visible{
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      html{scroll-behavior:auto}
+      *{animation:none !important; transition:none !important}
+    }
+
+    /* background blobs */
     .blob{
       position:absolute;
       width: 520px;
       height: 520px;
       border-radius: 999px;
       filter: blur(55px);
-      opacity:.18;
+      opacity:.16;
       pointer-events:none;
       transform: translateZ(0);
       animation: float 10s ease-in-out infinite;
@@ -57,27 +76,41 @@
 
     @keyframes float{
       0%,100%{transform: translate(0,0) scale(1)}
-      50%{transform: translate(0,-22px) scale(1.03)}
+      50%{transform: translate(0,-18px) scale(1.03)}
     }
 
-    /* --- layout --- */
-    .wrap{max-width:1100px; margin:0 auto; padding: 0 20px}
+    .wrap{
+      max-width: var(--max);
+      margin:0 auto;
+      padding: 0 var(--gutter);
+    }
 
-    /* --- NAV: high contrast --- */
+    /* ===== Desktop/Tablet sidebar nav ===== */
     .nav{
       position:fixed;
       left:0; top:0;
       height:100vh;
-      width:64px;
+      width: var(--nav-collapsed);
       z-index:80;
-      background:#ffffff;
-      border-right:2px solid #000000;
+      background:#fff;
+      border-right:2px solid #000;
       display:flex;
       align-items:center;
       justify-content:center;
       transition: width .25s ease;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
     }
-    .nav:hover{width:220px}
+
+    @media (hover:hover){
+      .nav:hover{width: var(--nav-expanded)}
+      .nav:hover::after{opacity:1}
+    }
+
+    body.nav-open .nav,
+    .nav:focus-within{
+      width: var(--nav-expanded);
+    }
 
     .nav::after{
       content:"";
@@ -89,36 +122,82 @@
       transition: opacity .3s ease;
       pointer-events:none;
     }
-    .nav:hover::after{opacity:1}
+    body.nav-open .nav::after,
+    .nav:focus-within::after{
+      opacity:1;
+    }
 
     .nav-inner{
       display:flex;
       flex-direction:column;
-      gap:26px;
-      padding: 20px 0;
+      gap:18px;
+      padding: 14px 0;
       width:100%;
       align-items:center;
       height:100%;
+    }
+
+    .nav-top{
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding: 0 12px;
+    }
+
+    .nav-toggle{
+      display:none;
+      width:40px; height:40px;
+      border:2px solid #000;
+      background:#fff;
+      border-radius: 14px;
+      font-weight:900;
+      cursor:pointer;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
+    }
+
+    @media (hover:none){
+      .nav-toggle{display:flex}
     }
 
     .dot{
       width:10px; height:10px; border-radius:999px;
       background: linear-gradient(135deg, var(--accent), var(--accent2));
       box-shadow: 0 0 0 6px rgba(0,87,255,.10);
+      flex:0 0 auto;
     }
 
-    .brand{display:flex; flex-direction:column; gap:10px; align-items:center}
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:center;
+      padding-top: 6px;
+    }
     .brand span:last-child{
-      font-size:.9rem;
+      font-size:.92rem;
       letter-spacing:.8px;
       color: var(--muted);
       opacity:0;
       transform: translateX(-8px);
       transition: opacity .25s ease, transform .25s ease;
       text-align:center;
-      font-weight:800;
+      font-weight:900;
+      line-height:1.15;
+      padding: 0 10px;
     }
-    .nav:hover .brand span:last-child{opacity:1; transform: translateX(0)}
+
+    body.nav-open .brand span:last-child,
+    .nav:focus-within .brand span:last-child{
+      opacity:1; transform: translateX(0);
+    }
+
+    @media (hover:hover){
+      .nav:hover .brand span:last-child{opacity:1; transform: translateX(0)}
+    }
 
     .links{
       display:flex;
@@ -131,50 +210,63 @@
 
     .pill{
       position:relative;
-      width:40px;
-      height:40px;
-      background:#ffffff;
-      border:2px solid #000000;
-      border-radius:0;
+      width:44px;
+      height:44px;
+      background:#fff;
+      border:2px solid #000;
+      border-radius: 16px;
       display:flex;
       align-items:center;
       justify-content:center;
       transition: width .2s ease, background .2s ease, color .2s ease;
       color:#000;
-      font-weight:800;
+      font-weight:900;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .pill::before{
       content:"";
-      width:8px;
-      height:8px;
-      background:#000000;
+      width:9px;
+      height:9px;
+      background:#000;
       transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
     }
 
     .pill span{
       position:absolute;
-      left:56px;
+      left:58px;
       white-space:nowrap;
-      font-size:.92rem;
+      font-size:.95rem;
       color:#000;
       opacity:0;
       transform: translateX(-8px);
       transition: opacity .25s ease, transform .25s ease, color .2s ease;
     }
 
-    .nav:hover .pill{
-      width:180px;
+    body.nav-open .pill,
+    .nav:focus-within .pill{
+      width: 190px;
       justify-content:flex-start;
       padding-left:14px;
     }
-    .nav:hover .pill span{opacity:1; transform: translateX(0)}
+    body.nav-open .pill span,
+    .nav:focus-within .pill span{
+      opacity:1; transform: translateX(0);
+    }
 
-    /* tooltip when collapsed */
+    @media (hover:hover){
+      .nav:hover .pill{
+        width:190px;
+        justify-content:flex-start;
+        padding-left:14px;
+      }
+      .nav:hover .pill span{opacity:1; transform: translateX(0)}
+    }
+
     .pill[data-label]::after{
       content: attr(data-label);
       position:absolute;
-      left: 56px;
+      left: 58px;
       top: 50%;
       transform: translateY(-50%) translateX(-8px);
       padding: 8px 10px;
@@ -190,15 +282,15 @@
       transition: opacity .18s ease, transform .18s ease;
       white-space:nowrap;
     }
-    body:not(.nav-open) .pill:hover::after{
-      opacity:1;
-      transform: translateY(-50%) translateX(0);
+
+    @media (hover:hover){
+      body:not(.nav-open) .pill:hover::after{
+        opacity:1;
+        transform: translateY(-50%) translateX(0);
+      }
     }
 
-    .pill:hover{
-      background:#000000;
-      color:#ffffff;
-    }
+    .pill:hover{background:#000; color:#fff}
     .pill:hover::before{
       background:#fff;
       transform: scale(1.15);
@@ -223,9 +315,9 @@
       padding-bottom: 14px;
     }
     .sbtn{
-      width:42px;
-      height:42px;
-      border-radius: 14px;
+      width:44px;
+      height:44px;
+      border-radius: 16px;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -244,37 +336,46 @@
       color:#fff;
     }
 
-    /* content offset */
+    /* content offset for sidebar */
     header, main, footer{
-      margin-left:64px;
+      margin-left: var(--nav-collapsed);
       transition: margin-left .25s ease;
       position:relative;
       z-index:1;
     }
-    .nav:hover ~ header,
-    .nav:hover ~ main,
-    .nav:hover ~ footer{margin-left:220px}
+    body.nav-open header,
+    body.nav-open main,
+    body.nav-open footer,
+    .nav:focus-within ~ header,
+    .nav:focus-within ~ main,
+    .nav:focus-within ~ footer{
+      margin-left: var(--nav-expanded);
+    }
 
-    /* --- hero --- */
+    @media (hover:hover){
+      .nav:hover ~ header,
+      .nav:hover ~ main,
+      .nav:hover ~ footer{margin-left: var(--nav-expanded)}
+    }
+
+    /* hero */
     header{position:relative; padding: 70px 0 40px}
 
     .hero{
       display:grid;
       grid-template-columns: 1.25fr .75fr;
-      gap: 26px;
+      gap: 22px;
       align-items:stretch;
     }
 
     .glass{
-      background:#ffffff;
-      border:2px solid #000000;
-      border-radius:0;
-      box-shadow:none;
+      background:#fff;
+      border:2px solid #000;
+      border-radius: var(--radius);
       color:#000;
     }
 
-    .hero-card{padding: 26px 26px 22px}
-
+    .hero-card{padding: 24px}
     .kicker{
       display:inline-flex;
       gap:10px;
@@ -283,7 +384,7 @@
       color: var(--muted);
       margin-bottom: 10px;
       flex-wrap:wrap;
-      font-weight:700;
+      font-weight:800;
     }
 
     .kicker .badge{
@@ -297,7 +398,7 @@
     }
 
     h1{
-      font-size: clamp(2.1rem, 2.9vw, 3.1rem);
+      font-size: clamp(2rem, 3.2vw, 3.1rem);
       line-height:1.08;
       margin: 6px 0 10px;
       letter-spacing: -0.6px;
@@ -317,12 +418,13 @@
       align-items:center;
       gap:10px;
       padding: 11px 14px;
-      border-radius: 14px;
+      border-radius: 16px;
       border: 2px solid #000;
       background:#fff;
       color:#000;
       transition: transform .2s ease, background .2s ease, color .2s ease;
       font-weight:900;
+      cursor:pointer;
     }
     .btn:hover{transform: translateY(-2px); background:#000; color:#fff}
     .btn.primary{
@@ -332,18 +434,18 @@
     }
     .btn.primary:hover{background:#111}
 
-    .mini{padding: 22px; display:flex; flex-direction:column; gap: 14px}
+    .mini{padding: 20px; display:flex; flex-direction:column; gap: 14px}
 
     .profile{display:flex; gap: 12px; align-items:center}
     .avatar{
       width:56px; height:56px; border-radius:18px;
       background: linear-gradient(135deg, rgba(0,87,255,.55), rgba(124,58,237,.45));
       border: 2px solid #000;
-      box-shadow:none;
+      flex:0 0 auto;
     }
     .who{display:flex; flex-direction:column}
     .who b{font-size:1.02rem}
-    .who span{color:var(--muted); font-size:.92rem}
+    .who span{color:var(--muted); font-size:.92rem; font-weight:700}
 
     .statgrid{display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px}
     .stat{
@@ -352,38 +454,41 @@
       border-radius: 16px;
       padding: 12px;
       text-align:center;
+      min-width: 0;
     }
     .stat .num{font-size:1.25rem; font-weight:900}
     .stat .lbl{font-size:.78rem; color:var(--muted); font-weight:800}
 
-    /* --- sections --- */
+    /* sections */
     section{
-      padding: 48px 0;
-      border-top: 2px solid #000000;
+      padding: 44px 0;
+      border-top: 2px solid #000;
     }
 
-    .section-title{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom: 18px}
+    .section-title{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom: 18px;
+      flex-wrap:wrap;
+    }
     h2{
-      margin:0 0 16px 0;
-      font-size: 1.6rem;
+      margin:0;
+      font-size: 1.5rem;
       font-weight: 900;
       letter-spacing: 0.5px;
       text-transform: uppercase;
     }
     .hint{color: var(--muted); font-size:.92rem; font-weight:700}
 
-    .grid{
-      display:flex;
-      flex-direction:column;
-      gap:20px;
-    }
+    .grid{display:flex; flex-direction:column; gap:18px}
 
     .card{
-      padding:24px;
-      background:#ffffff;
-      border:2px solid #000000;
-      border-radius:0;
-      margin-bottom:24px;
+      padding: 22px;
+      background:#fff;
+      border:2px solid #000;
+      border-radius: var(--radius);
       color:#000;
     }
     .card h3{
@@ -393,13 +498,13 @@
     }
     .card p{
       margin:0 0 12px 0;
-      font-size:0.95rem;
+      font-size:0.96rem;
       line-height:1.7;
       color:#111;
     }
 
     .tagrow{
-      margin-top:16px;
+      margin-top:14px;
       display:flex;
       flex-wrap:wrap;
       gap:8px;
@@ -419,15 +524,22 @@
       content:"";
       position:absolute;
       inset:-2px;
+      border-radius: calc(var(--radius) + 2px);
       background:
         radial-gradient(600px 300px at 20% 0%, rgba(0,87,255,.12), transparent 55%),
         radial-gradient(600px 300px at 80% 100%, rgba(124,58,237,.10), transparent 55%);
-      opacity:.7;
+      opacity:.75;
       pointer-events:none;
     }
     .proj > *{position:relative}
 
-    .proj .meta{display:flex; justify-content:space-between; align-items:center; gap:12px}
+    .proj .meta{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
     .proj .meta .type{
       font-size:.8rem;
       color:#fff;
@@ -438,13 +550,18 @@
       font-weight:900;
     }
 
-    .proj .actions{margin-top:14px; display:flex; gap:10px; flex-wrap:wrap}
+    .proj .actions{
+      margin-top:14px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
     .link{
       display:inline-flex;
       align-items:center;
       gap:8px;
       padding: 9px 12px;
-      border-radius: 14px;
+      border-radius: 16px;
       border: 2px solid #000;
       background:#fff;
       font-weight:900;
@@ -453,27 +570,7 @@
     }
     .link:hover{transform: translateY(-2px); background:#000; color:#fff}
 
-    /* --- skills --- */
-    .skills{width:100%}
-    .skill{margin-top: 12px}
-    .skill .top{display:flex; justify-content:space-between; color:var(--muted); font-size:.9rem; font-weight:800}
-    .bar{
-      height: 10px;
-      border-radius:999px;
-      background: #fff;
-      border:2px solid #000;
-      overflow:hidden;
-      margin-top: 8px
-    }
-    .bar > span{
-      display:block;
-      height: 100%;
-      width: 0;
-      border-radius:999px;
-      background: linear-gradient(90deg, rgba(0,87,255,.95), rgba(124,58,237,.85));
-      transition: width 1.2s ease
-    }
-
+    /* timeline items */
     .timeline{width:100%}
     .item{
       padding: 12px 12px;
@@ -483,14 +580,10 @@
       margin-top: 12px
     }
     .item b{display:block; font-weight:900}
-    .item span{display:block; color:var(--muted); font-size:.9rem; font-weight:700}
+    .item span{display:block; color:var(--muted); font-size:.92rem; font-weight:700}
 
-    /* --- contact --- */
-    .contact{
-      display:flex;
-      flex-direction:column;
-      gap:20px;
-    }
+    /* contact */
+    .contact{display:flex; flex-direction:column; gap:18px}
     .field{display:flex; flex-direction:column; gap:8px; margin-top: 12px}
     input, textarea{
       width:100%;
@@ -499,49 +592,122 @@
       border: 2px solid #000;
       background: #fff;
       color: #000;
-      outline:none
+      outline:none;
+      font-size: 16px; /* prevents iOS zoom */
     }
     input::placeholder, textarea::placeholder{color:#333}
     textarea{min-height: 120px; resize: vertical}
 
     footer{
-      padding: 26px 0 40px;
+      padding: 24px 0 40px;
       color: var(--muted);
       border-top: 2px solid #000;
       background: #fff;
       font-weight:700;
     }
 
-    /* --- reveal animation --- */
-    .reveal{opacity:0; transform: translateY(14px); transition: opacity .7s ease, transform .7s ease}
+    /* reveal animation */
+    .reveal{opacity:0; transform: translateY(12px); transition: opacity .7s ease, transform .7s ease}
     .reveal.show{opacity:1; transform: translateY(0)}
 
-    /* --- responsive --- */
-    @media (max-width: 900px){
-      .nav{width:64px}
-      .nav:hover{width:64px}
-      header, main, footer{margin-left:64px}
-      body:not(.nav-open) .pill:hover::after{opacity:0}
-      .hero{grid-template-columns: 1fr;}
-      .contact{grid-template-columns: 1fr;}
+    /* Tablet */
+    @media (max-width: 980px){
+      .hero{grid-template-columns: 1fr; gap: 18px;}
+    }
+
+    /* Mobile: sidebar becomes bottom nav */
+    @media (max-width: 760px){
+      .blob{opacity:.10; width:420px; height:420px; filter: blur(60px)}
+      .blob.two{top:-40px}
+      .blob.three{bottom:-320px}
+
+      header, main, footer{margin-left: 0}
+      .nav{display:none}
+
+      body{
+        padding-bottom: calc(var(--mnav-h) + env(safe-area-inset-bottom));
+      }
+
+      header{padding: 60px 0 26px}
+      section{padding: 36px 0}
+      .card{padding: 18px}
+
+      .statgrid{grid-template-columns: 1fr 1fr 1fr}
+      .stat .num{font-size:1.15rem}
+    }
+
+    @media (max-width: 420px){
+      .statgrid{grid-template-columns: 1fr 1fr}
+      .cta-row{gap:10px}
+      .btn{width:100%; justify-content:center}
+      .proj .actions .link{width:100%; justify-content:center}
+    }
+
+    /* Mobile bottom nav */
+    .mnav{
+      display:none;
+      position:fixed;
+      left:0; right:0; bottom:0;
+      height: calc(var(--mnav-h) + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      background:#fff;
+      border-top:2px solid #000;
+      z-index:90;
+    }
+    @media (max-width: 760px){
+      .mnav{display:flex}
+    }
+
+    .mnav-inner{
+      width:100%;
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      align-items:center;
+      height: var(--mnav-h);
+      padding: 0 10px;
+      gap: 10px;
+    }
+
+    .mnav a{
+      height: 48px;
+      border:2px solid #000;
+      border-radius: 16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      letter-spacing:.2px;
+      background:#fff;
+      color:#000;
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
+    }
+
+    .mnav a[aria-current="page"]{
+      background:#000;
+      color:#fff;
     }
   </style>
 </head>
-<body>
 
-  <!-- floating blobs -->
+<body>
   <div class="blob one" aria-hidden="true"></div>
   <div class="blob two" aria-hidden="true"></div>
   <div class="blob three" aria-hidden="true"></div>
 
-  <nav class="nav">
+  <!-- Desktop/Tablet sidebar nav -->
+  <nav class="nav" aria-label="Primary navigation">
     <div class="wrap nav-inner">
+      <div class="nav-top">
+        <button class="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">≡</button>
+      </div>
+
       <a class="brand" href="#top" aria-label="Go to top">
         <span class="dot"></span>
         <span>Shubham Navik</span>
       </a>
 
-      <div class="links" aria-label="Primary navigation">
+      <div class="links">
         <a class="pill" href="#projects" data-label="Projects"><span>Projects</span></a>
         <a class="pill" href="#skills" data-label="Skills"><span>Skills</span></a>
         <a class="pill" href="#experience" data-label="Experience"><span>Experience</span></a>
@@ -552,6 +718,16 @@
         <a class="sbtn" href="#" title="Replace with your LinkedIn">in</a>
         <a class="sbtn" href="#" title="Replace with your GitHub">gh</a>
       </div>
+    </div>
+  </nav>
+
+  <!-- Mobile bottom nav -->
+  <nav class="mnav" aria-label="Mobile navigation">
+    <div class="mnav-inner">
+      <a href="#projects">Projects</a>
+      <a href="#skills">Skills</a>
+      <a href="#experience">Experience</a>
+      <a href="#contact">Contact</a>
     </div>
   </nav>
 
@@ -575,7 +751,7 @@
           </div>
         </div>
 
-        <aside class="glass mini reveal">
+        <aside class="glass mini reveal" aria-label="Profile summary">
           <div class="profile">
             <div class="avatar" aria-hidden="true"></div>
             <div class="who">
@@ -600,9 +776,9 @@
           </div>
 
           <div style="display:flex; gap:10px; flex-wrap:wrap">
-            <a class="pill" href="#" title="Replace with your LinkedIn"><span>LinkedIn</span></a>
-            <a class="pill" href="#" title="Replace with your GitHub"><span>GitHub</span></a>
-            <a class="pill" href="#" title="Replace with your Power BI portfolio"><span>Power BI</span></a>
+            <a class="link" href="#" title="Replace with your LinkedIn">LinkedIn</a>
+            <a class="link" href="#" title="Replace with your GitHub">GitHub</a>
+            <a class="link" href="#" title="Replace with your Power BI portfolio">Power BI</a>
           </div>
         </aside>
       </div>
@@ -631,7 +807,7 @@
             <div class="tagrow">
               <span class="tag">Pandas</span><span class="tag">EDA</span><span class="tag">Segmentation</span><span class="tag">Insights</span>
             </div>
-            <div class="actions">
+            <div class="proj actions">
               <a class="link" href="#" title="Replace with GitHub repo">GitHub Repo</a>
               <a class="link" href="#" title="Replace with report/notebook">Case Study</a>
             </div>
@@ -650,7 +826,7 @@
             <div class="tagrow">
               <span class="tag">Data Cleaning</span><span class="tag">Clustering</span><span class="tag">Distance Metrics</span><span class="tag">Mapping</span>
             </div>
-            <div class="actions">
+            <div class="proj actions">
               <a class="link" href="#" title="Replace with GitHub repo">GitHub Repo</a>
               <a class="link" href="#" title="Replace with notebook">Notebook</a>
             </div>
@@ -669,7 +845,7 @@
             <div class="tagrow">
               <span class="tag">TF-IDF</span><span class="tag">Logistic Regression</span><span class="tag">Explainability</span><span class="tag">NLP</span>
             </div>
-            <div class="actions">
+            <div class="proj actions">
               <a class="link" href="#" title="Replace with GitHub repo">GitHub Repo</a>
               <a class="link" href="#" title="Replace with write-up">Write-up</a>
             </div>
@@ -688,7 +864,7 @@
             <div class="tagrow">
               <span class="tag">DAX</span><span class="tag">Data Modeling</span><span class="tag">Storytelling</span><span class="tag">KPIs</span>
             </div>
-            <div class="actions">
+            <div class="proj actions">
               <a class="link" href="#" title="Replace with Power BI public link">Live Dashboard</a>
               <a class="link" href="#" title="Replace with PDF">Snapshot</a>
             </div>
@@ -707,7 +883,7 @@
             <div class="tagrow">
               <span class="tag">Joins</span><span class="tag">CTEs</span><span class="tag">Windows</span><span class="tag">Optimization</span>
             </div>
-            <div class="actions">
+            <div class="proj actions">
               <a class="link" href="#" title="Replace with GitHub repo">SQL Scripts</a>
               <a class="link" href="#" title="Replace with notes">Results</a>
             </div>
@@ -726,7 +902,7 @@
             <div class="tagrow">
               <span class="tag">Problem Framing</span><span class="tag">Risk Register</span><span class="tag">AI Ethics</span><span class="tag">Stakeholders</span>
             </div>
-            <div class="actions">
+            <div class="proj actions">
               <a class="link" href="#" title="Replace with report link">Report</a>
               <a class="link" href="#" title="Replace with slides">Slides</a>
             </div>
@@ -735,33 +911,26 @@
       </div>
     </section>
 
+    <!-- ===== Skills (no proficiency, no bars) ===== -->
     <section id="skills">
       <div class="wrap">
         <div class="section-title">
-          <h2>Skills Snapshot</h2>
-          <div class="hint">Quick confidence bars + practical tools.</div>
+          <h2>Skills</h2>
+          <div class="hint">Tools + the kind of work I do.</div>
         </div>
 
         <div class="grid">
-          <div class="card skills reveal">
-            <h3>Core Analytics</h3>
-            <p>Strong foundation in cleaning, exploring, and communicating insights.</p>
-
-            <div class="skill" data-level="88">
-              <div class="top"><span>Python (Pandas, EDA)</span><span>Advanced</span></div>
-              <div class="bar"><span></span></div>
-            </div>
-            <div class="skill" data-level="82">
-              <div class="top"><span>SQL (Joins, CTEs, Windows)</span><span>Strong</span></div>
-              <div class="bar"><span></span></div>
-            </div>
-            <div class="skill" data-level="78">
-              <div class="top"><span>Power BI (DAX, Modeling)</span><span>Strong</span></div>
-              <div class="bar"><span></span></div>
-            </div>
-            <div class="skill" data-level="70">
-              <div class="top"><span>Statistics & Experiment Thinking</span><span>Good</span></div>
-              <div class="bar"><span></span></div>
+          <div class="card reveal">
+            <h3>Tools I use</h3>
+            <div class="tagrow" style="margin-top:12px">
+              <span class="tag">Python</span>
+              <span class="tag">Pandas</span>
+              <span class="tag">NumPy</span>
+              <span class="tag">SQL</span>
+              <span class="tag">Power BI</span>
+              <span class="tag">DAX</span>
+              <span class="tag">Excel</span>
+              <span class="tag">Git</span>
             </div>
           </div>
 
@@ -771,15 +940,29 @@
 
             <div class="item">
               <b>Lambton College — Business Analytics</b>
-              <span>Coursework: Analytics, BI, Text Mining, Testing, Business Case Development</span>
+              <span>Analytics, BI, Text Mining, Testing, Business Case Development</span>
             </div>
+
             <div class="item">
-              <b>Data Projects (Academic + Personal)</b>
+              <b>Projects</b>
               <span>Retail analytics, clustering, sentiment analysis, dashboards, SQL insights</span>
             </div>
+
             <div class="item">
-              <b>Work Experience</b>
-              <span>Physically demanding roles with strong reliability + teamwork (add details)</span>
+              <b>Work</b>
+              <span>Fast-paced roles that built consistency, teamwork, and reliability</span>
+            </div>
+          </div>
+
+          <div class="card reveal">
+            <h3>What I do</h3>
+            <div class="tagrow" style="margin-top:12px">
+              <span class="tag">Data cleaning</span>
+              <span class="tag">Exploratory analysis</span>
+              <span class="tag">Dashboards</span>
+              <span class="tag">Reporting</span>
+              <span class="tag">Customer insights</span>
+              <span class="tag">Business questions → answers</span>
             </div>
           </div>
         </div>
@@ -809,7 +992,6 @@
               </div>
             </div>
 
-            <!-- Optional simple form (works with Netlify Forms when deployed on Netlify) -->
             <form name="contact" method="POST" data-netlify="true">
               <input type="hidden" name="form-name" value="contact" />
               <div class="field">
@@ -854,54 +1036,43 @@
           e.target.classList.add('show');
           io.unobserve(e.target);
         }
-      })
+      });
     }, { threshold: 0.12 });
     revealEls.forEach(el => io.observe(el));
 
-    // animate skill bars when the skills card is visible
-    const skillsCard = document.querySelector('.skills');
-    if(skillsCard){
-      const skillsObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if(entry.isIntersecting){
-            document.querySelectorAll('.skill').forEach(s => {
-              const level = s.getAttribute('data-level') || 0;
-              const bar = s.querySelector('.bar > span');
-              if(bar) bar.style.width = Math.max(0, Math.min(100, level)) + '%';
-            });
-            skillsObserver.disconnect();
-          }
-        })
-      }, { threshold: 0.3 });
-      skillsObserver.observe(skillsCard);
+    // Desktop/Tablet: nav open state for touch devices + keyboard
+    const navToggle = document.querySelector('.nav-toggle');
+    if(navToggle){
+      navToggle.addEventListener('click', () => {
+        const open = document.body.classList.toggle('nav-open');
+        navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
     }
 
-    // nav open state (tooltip logic)
-    const nav = document.querySelector('.nav');
-    if(nav){
-      nav.addEventListener('mouseenter', () => document.body.classList.add('nav-open'));
-      nav.addEventListener('mouseleave', () => document.body.classList.remove('nav-open'));
-    }
-
-    // active section highlight
-    const sections = ['#projects', '#skills', '#experience', '#contact']
-      .map(sel => document.querySelector(sel))
+    // Active section highlight (desktop sidebar + mobile bottom nav)
+    const sectionEls = ['projects', 'skills', 'experience', 'contact']
+      .map(id => document.getElementById(id))
       .filter(Boolean);
 
-    const pills = Array.from(document.querySelectorAll('.pill[href^="#"]'));
+    const pillLinks = Array.from(document.querySelectorAll('.pill[href^="#"]'));
+    const mnavLinks = Array.from(document.querySelectorAll('.mnav a[href^="#"]'));
+
     const setActive = (id) => {
-      pills.forEach(p => p.classList.toggle('active', p.getAttribute('href') === ('#' + id)));
+      pillLinks.forEach(p => p.classList.toggle('active', p.getAttribute('href') === ('#' + id)));
+      mnavLinks.forEach(a => {
+        const isActive = a.getAttribute('href') === ('#' + id);
+        a.setAttribute('aria-current', isActive ? 'page' : 'false');
+      });
     };
 
     const secObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
-        if(entry.isIntersecting){
-          setActive(entry.target.id);
-        }
+        if(entry.isIntersecting) setActive(entry.target.id);
       });
     }, { threshold: 0.45 });
 
-    sections.forEach(sec => secObserver.observe(sec));
+    sectionEls.forEach(sec => secObserver.observe(sec));
   </script>
 </body>
 </html>
+```
