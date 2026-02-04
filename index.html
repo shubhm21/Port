@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,15 +18,28 @@
       --accent:#0057ff;
       --accent2:#7c3aed;
 
-      --radius:18px;
-      --max:1100px;
+      /* Fluid sizing (adapts to any screen) */
+      --max: 1120px;
+      --gutter: clamp(14px, 3.2vw, 28px);
+      --radius: clamp(14px, 2vw, 20px);
 
-      --gutter: clamp(16px, 3vw, 24px);
+      --h1: clamp(1.9rem, 4.2vw, 3.2rem);
+      --h2: clamp(1.2rem, 2.3vw, 1.6rem);
+      --h3: clamp(1.05rem, 1.6vw, 1.25rem);
 
-      --nav-collapsed: 68px;
-      --nav-expanded: 240px;
+      --text-base: clamp(0.98rem, 1.15vw, 1.05rem);
+      --text-sm: clamp(0.88rem, 1.05vw, 0.95rem);
 
-      --mnav-h: 72px;
+      --gap-1: clamp(10px, 1.6vw, 16px);
+      --gap-2: clamp(14px, 2.2vw, 22px);
+      --gap-3: clamp(18px, 3vw, 28px);
+
+      /* nav sizing */
+      --nav-collapsed: clamp(58px, 6vw, 72px);
+      --nav-expanded: clamp(210px, 26vw, 260px);
+
+      /* mobile bottom bar */
+      --mnav-h: clamp(62px, 10vw, 74px);
     }
 
     *{box-sizing:border-box}
@@ -42,6 +54,7 @@
       overflow-x:hidden;
       -webkit-text-size-adjust: 100%;
       text-rendering: optimizeLegibility;
+      font-size: var(--text-base);
     }
 
     a{color:inherit; text-decoration:none}
@@ -60,23 +73,23 @@
     /* background blobs */
     .blob{
       position:absolute;
-      width: 520px;
-      height: 520px;
+      width: clamp(340px, 40vw, 560px);
+      height: clamp(340px, 40vw, 560px);
       border-radius: 999px;
-      filter: blur(55px);
-      opacity:.16;
+      filter: blur(clamp(42px, 6vw, 60px));
+      opacity:.14;
       pointer-events:none;
       transform: translateZ(0);
       animation: float 10s ease-in-out infinite;
       z-index:0;
     }
-    .blob.one{left:-180px; top:120px; background: rgba(0,87,255,.25)}
-    .blob.two{right:-220px; top:40px; background: rgba(124,58,237,.20); animation-delay: -3s}
-    .blob.three{left:10%; bottom:-260px; background: rgba(0,87,255,.18); animation-delay:-6s}
+    .blob.one{left: min(-180px, -10vw); top: clamp(60px, 10vh, 140px); background: rgba(0,87,255,.25)}
+    .blob.two{right: min(-220px, -12vw); top: clamp(20px, 6vh, 70px); background: rgba(124,58,237,.20); animation-delay: -3s}
+    .blob.three{left: 8%; bottom: min(-260px, -20vh); background: rgba(0,87,255,.18); animation-delay:-6s}
 
     @keyframes float{
       0%,100%{transform: translate(0,0) scale(1)}
-      50%{transform: translate(0,-18px) scale(1.03)}
+      50%{transform: translate(0,-16px) scale(1.03)}
     }
 
     .wrap{
@@ -130,7 +143,7 @@
     .nav-inner{
       display:flex;
       flex-direction:column;
-      gap:18px;
+      gap: var(--gap-2);
       padding: 14px 0;
       width:100%;
       align-items:center;
@@ -148,10 +161,10 @@
 
     .nav-toggle{
       display:none;
-      width:40px; height:40px;
+      width:42px; height:42px;
       border:2px solid #000;
       background:#fff;
-      border-radius: 14px;
+      border-radius: 16px;
       font-weight:900;
       cursor:pointer;
       align-items:center;
@@ -178,7 +191,7 @@
       padding-top: 6px;
     }
     .brand span:last-child{
-      font-size:.92rem;
+      font-size: var(--text-sm);
       letter-spacing:.8px;
       color: var(--muted);
       opacity:0;
@@ -194,7 +207,6 @@
     .nav:focus-within .brand span:last-child{
       opacity:1; transform: translateX(0);
     }
-
     @media (hover:hover){
       .nav:hover .brand span:last-child{opacity:1; transform: translateX(0)}
     }
@@ -202,7 +214,7 @@
     .links{
       display:flex;
       flex-direction:column;
-      gap:12px;
+      gap: var(--gap-1);
       width:100%;
       align-items:center;
       padding-top: 6px;
@@ -236,7 +248,7 @@
       position:absolute;
       left:58px;
       white-space:nowrap;
-      font-size:.95rem;
+      font-size: var(--text-sm);
       color:#000;
       opacity:0;
       transform: translateX(-8px);
@@ -245,7 +257,7 @@
 
     body.nav-open .pill,
     .nav:focus-within .pill{
-      width: 190px;
+      width: clamp(170px, 20vw, 200px);
       justify-content:flex-start;
       padding-left:14px;
     }
@@ -256,7 +268,7 @@
 
     @media (hover:hover){
       .nav:hover .pill{
-        width:190px;
+        width: clamp(170px, 20vw, 200px);
         justify-content:flex-start;
         padding-left:14px;
       }
@@ -275,14 +287,13 @@
       border: 2px solid #000;
       color:#fff;
       font-weight:900;
-      font-size:.86rem;
+      font-size: .86rem;
       letter-spacing:.2px;
       opacity:0;
       pointer-events:none;
       transition: opacity .18s ease, transform .18s ease;
       white-space:nowrap;
     }
-
     @media (hover:hover){
       body:not(.nav-open) .pill:hover::after{
         opacity:1;
@@ -351,7 +362,6 @@
     .nav:focus-within ~ footer{
       margin-left: var(--nav-expanded);
     }
-
     @media (hover:hover){
       .nav:hover ~ header,
       .nav:hover ~ main,
@@ -359,12 +369,12 @@
     }
 
     /* hero */
-    header{position:relative; padding: 70px 0 40px}
+    header{position:relative; padding: clamp(56px, 7vw, 80px) 0 clamp(22px, 4vw, 42px)}
 
     .hero{
       display:grid;
       grid-template-columns: 1.25fr .75fr;
-      gap: 22px;
+      gap: var(--gap-2);
       align-items:stretch;
     }
 
@@ -375,12 +385,13 @@
       color:#000;
     }
 
-    .hero-card{padding: 24px}
+    .hero-card{padding: clamp(18px, 2.6vw, 26px)}
+
     .kicker{
       display:inline-flex;
       gap:10px;
       align-items:center;
-      font-size:.92rem;
+      font-size: var(--text-sm);
       color: var(--muted);
       margin-bottom: 10px;
       flex-wrap:wrap;
@@ -398,7 +409,7 @@
     }
 
     h1{
-      font-size: clamp(2rem, 3.2vw, 3.1rem);
+      font-size: var(--h1);
       line-height:1.08;
       margin: 6px 0 10px;
       letter-spacing: -0.6px;
@@ -408,10 +419,10 @@
       color: var(--muted);
       max-width: 60ch;
       margin: 0 0 18px;
-      font-size: 1.02rem;
+      font-size: var(--text-base);
     }
 
-    .cta-row{display:flex; gap:12px; flex-wrap:wrap; margin-top: 14px}
+    .cta-row{display:flex; gap: var(--gap-1); flex-wrap:wrap; margin-top: 14px}
 
     .btn{
       display:inline-flex;
@@ -425,6 +436,7 @@
       transition: transform .2s ease, background .2s ease, color .2s ease;
       font-weight:900;
       cursor:pointer;
+      font-size: var(--text-sm);
     }
     .btn:hover{transform: translateY(-2px); background:#000; color:#fff}
     .btn.primary{
@@ -434,20 +446,26 @@
     }
     .btn.primary:hover{background:#111}
 
-    .mini{padding: 20px; display:flex; flex-direction:column; gap: 14px}
+    .mini{padding: clamp(16px, 2.2vw, 22px); display:flex; flex-direction:column; gap: 14px}
 
     .profile{display:flex; gap: 12px; align-items:center}
     .avatar{
-      width:56px; height:56px; border-radius:18px;
+      width: clamp(50px, 7vw, 58px);
+      height: clamp(50px, 7vw, 58px);
+      border-radius: clamp(16px, 2vw, 18px);
       background: linear-gradient(135deg, rgba(0,87,255,.55), rgba(124,58,237,.45));
       border: 2px solid #000;
       flex:0 0 auto;
     }
     .who{display:flex; flex-direction:column}
-    .who b{font-size:1.02rem}
-    .who span{color:var(--muted); font-size:.92rem; font-weight:700}
+    .who b{font-size: var(--text-base)}
+    .who span{color:var(--muted); font-size: var(--text-sm); font-weight:700}
 
-    .statgrid{display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px}
+    .statgrid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
     .stat{
       background:#fff;
       border: 2px solid #000;
@@ -456,12 +474,12 @@
       text-align:center;
       min-width: 0;
     }
-    .stat .num{font-size:1.25rem; font-weight:900}
-    .stat .lbl{font-size:.78rem; color:var(--muted); font-weight:800}
+    .stat .num{font-size: clamp(1.05rem, 2.2vw, 1.25rem); font-weight:900}
+    .stat .lbl{font-size: .78rem; color:var(--muted); font-weight:800}
 
     /* sections */
     section{
-      padding: 44px 0;
+      padding: clamp(32px, 5vw, 48px) 0;
       border-top: 2px solid #000;
     }
 
@@ -469,23 +487,24 @@
       display:flex;
       align-items:flex-end;
       justify-content:space-between;
-      gap:16px;
+      gap: var(--gap-1);
       margin-bottom: 18px;
       flex-wrap:wrap;
     }
+
     h2{
       margin:0;
-      font-size: 1.5rem;
+      font-size: var(--h2);
       font-weight: 900;
       letter-spacing: 0.5px;
       text-transform: uppercase;
     }
-    .hint{color: var(--muted); font-size:.92rem; font-weight:700}
+    .hint{color: var(--muted); font-size: var(--text-sm); font-weight:700}
 
-    .grid{display:flex; flex-direction:column; gap:18px}
+    .grid{display:flex; flex-direction:column; gap: var(--gap-2)}
 
     .card{
-      padding: 22px;
+      padding: clamp(16px, 2.4vw, 22px);
       background:#fff;
       border:2px solid #000;
       border-radius: var(--radius);
@@ -493,12 +512,12 @@
     }
     .card h3{
       margin:0 0 10px 0;
-      font-size:1.2rem;
+      font-size: var(--h3);
       font-weight:900;
     }
     .card p{
       margin:0 0 12px 0;
-      font-size:0.96rem;
+      font-size: var(--text-base);
       line-height:1.7;
       color:#111;
     }
@@ -510,7 +529,7 @@
       gap:8px;
     }
     .tag{
-      font-size:.78rem;
+      font-size: .85rem;
       padding: 6px 10px;
       border-radius: 999px;
       background: #fff;
@@ -541,7 +560,7 @@
       flex-wrap:wrap;
     }
     .proj .meta .type{
-      font-size:.8rem;
+      font-size:.82rem;
       color:#fff;
       padding: 6px 10px;
       border-radius:999px;
@@ -567,6 +586,7 @@
       font-weight:900;
       color:#000;
       transition: transform .2s ease, background .2s ease, color .2s ease;
+      font-size: var(--text-sm);
     }
     .link:hover{transform: translateY(-2px); background:#000; color:#fff}
 
@@ -580,10 +600,10 @@
       margin-top: 12px
     }
     .item b{display:block; font-weight:900}
-    .item span{display:block; color:var(--muted); font-size:.92rem; font-weight:700}
+    .item span{display:block; color:var(--muted); font-size: var(--text-sm); font-weight:700}
 
     /* contact */
-    .contact{display:flex; flex-direction:column; gap:18px}
+    .contact{display:flex; flex-direction:column; gap: var(--gap-2)}
     .field{display:flex; flex-direction:column; gap:8px; margin-top: 12px}
     input, textarea{
       width:100%;
@@ -604,43 +624,35 @@
       border-top: 2px solid #000;
       background: #fff;
       font-weight:700;
+      font-size: var(--text-sm);
     }
 
     /* reveal animation */
     .reveal{opacity:0; transform: translateY(12px); transition: opacity .7s ease, transform .7s ease}
     .reveal.show{opacity:1; transform: translateY(0)}
 
-    /* Tablet */
+    /* ===== Breakpoints for layout behavior only ===== */
+
+    /* When hero gets tight, stack */
     @media (max-width: 980px){
-      .hero{grid-template-columns: 1fr; gap: 18px;}
+      .hero{grid-template-columns: 1fr}
     }
 
-    /* Mobile: sidebar becomes bottom nav */
+    /* Mobile: sidebar -> bottom nav */
     @media (max-width: 760px){
-      .blob{opacity:.10; width:420px; height:420px; filter: blur(60px)}
-      .blob.two{top:-40px}
-      .blob.three{bottom:-320px}
-
       header, main, footer{margin-left: 0}
       .nav{display:none}
 
       body{
         padding-bottom: calc(var(--mnav-h) + env(safe-area-inset-bottom));
       }
-
-      header{padding: 60px 0 26px}
-      section{padding: 36px 0}
-      .card{padding: 18px}
-
-      .statgrid{grid-template-columns: 1fr 1fr 1fr}
-      .stat .num{font-size:1.15rem}
     }
 
+    /* Ultra small: buttons full width */
     @media (max-width: 420px){
-      .statgrid{grid-template-columns: 1fr 1fr}
-      .cta-row{gap:10px}
       .btn{width:100%; justify-content:center}
       .proj .actions .link{width:100%; justify-content:center}
+      .statgrid{grid-template-columns: repeat(2, minmax(0, 1fr))}
     }
 
     /* Mobile bottom nav */
@@ -661,7 +673,7 @@
     .mnav-inner{
       width:100%;
       display:grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       align-items:center;
       height: var(--mnav-h);
       padding: 0 10px;
@@ -681,6 +693,9 @@
       color:#000;
       -webkit-tap-highlight-color: transparent;
       user-select:none;
+      font-size: var(--text-sm);
+      padding: 0 8px;
+      text-align:center;
     }
 
     .mnav a[aria-current="page"]{
@@ -911,7 +926,7 @@
       </div>
     </section>
 
-    <!-- ===== Skills (no proficiency, no bars) ===== -->
+    <!-- Skills (no proficiency, no bars) -->
     <section id="skills">
       <div class="wrap">
         <div class="section-title">
@@ -1075,4 +1090,3 @@
   </script>
 </body>
 </html>
-```
