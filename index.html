@@ -18,7 +18,7 @@
       --accent:#0057ff;
       --accent2:#7c3aed;
 
-      /* Fluid sizing (adapts to any screen) */
+      /* Fluid sizing */
       --max: 1120px;
       --gutter: clamp(14px, 3.2vw, 28px);
       --radius: clamp(14px, 2vw, 20px);
@@ -34,12 +34,12 @@
       --gap-2: clamp(14px, 2.2vw, 22px);
       --gap-3: clamp(18px, 3vw, 28px);
 
-      /* nav sizing */
-      --nav-collapsed: clamp(58px, 6vw, 72px);
-      --nav-expanded: clamp(210px, 26vw, 260px);
+      /* Sidebar sizes (always sidebar, even on mobile) */
+      --nav-collapsed: clamp(56px, 7vw, 72px);
+      --nav-expanded: clamp(200px, 72vw, 260px);
 
-      /* mobile bottom bar */
-      --mnav-h: clamp(62px, 10vw, 74px);
+      /* On very small phones, nav expands to drawer width */
+      --nav-drawer: min(86vw, 280px);
     }
 
     *{box-sizing:border-box}
@@ -98,7 +98,9 @@
       padding: 0 var(--gutter);
     }
 
-    /* ===== Desktop/Tablet sidebar nav ===== */
+    /* =========================
+       SIDEBAR NAV (ALL SCREENS)
+       ========================= */
     .nav{
       position:fixed;
       left:0; top:0;
@@ -110,16 +112,21 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      transition: width .25s ease;
+      transition: width .25s ease, transform .25s ease;
       padding-top: env(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-bottom);
     }
 
+    /* Desktop hover expand */
     @media (hover:hover){
       .nav:hover{width: var(--nav-expanded)}
       .nav:hover::after{opacity:1}
+      .nav:hover ~ header,
+      .nav:hover ~ main,
+      .nav:hover ~ footer{margin-left: var(--nav-expanded)}
     }
 
+    /* Open state (works on mobile via toggle) */
     body.nav-open .nav,
     .nav:focus-within{
       width: var(--nav-expanded);
@@ -159,22 +166,21 @@
       padding: 0 12px;
     }
 
+    /* Toggle always visible (needed for mobile) */
     .nav-toggle{
-      display:none;
       width:42px; height:42px;
       border:2px solid #000;
       background:#fff;
       border-radius: 16px;
       font-weight:900;
       cursor:pointer;
+      display:flex;
       align-items:center;
       justify-content:center;
       user-select:none;
+      -webkit-tap-highlight-color: transparent;
     }
-
-    @media (hover:none){
-      .nav-toggle{display:flex}
-    }
+    .nav-toggle:hover{background:#000; color:#fff}
 
     .dot{
       width:10px; height:10px; border-radius:999px;
@@ -204,9 +210,7 @@
     }
 
     body.nav-open .brand span:last-child,
-    .nav:focus-within .brand span:last-child{
-      opacity:1; transform: translateX(0);
-    }
+    .nav:focus-within .brand span:last-child{opacity:1; transform: translateX(0)}
     @media (hover:hover){
       .nav:hover .brand span:last-child{opacity:1; transform: translateX(0)}
     }
@@ -262,10 +266,7 @@
       padding-left:14px;
     }
     body.nav-open .pill span,
-    .nav:focus-within .pill span{
-      opacity:1; transform: translateX(0);
-    }
-
+    .nav:focus-within .pill span{opacity:1; transform: translateX(0)}
     @media (hover:hover){
       .nav:hover .pill{
         width: clamp(170px, 20vw, 200px);
@@ -275,6 +276,7 @@
       .nav:hover .pill span{opacity:1; transform: translateX(0)}
     }
 
+    /* tooltip when collapsed */
     .pill[data-label]::after{
       content: attr(data-label);
       position:absolute;
@@ -347,7 +349,9 @@
       color:#fff;
     }
 
-    /* content offset for sidebar */
+    /* =========================
+       CONTENT OFFSET (ALL SCREENS)
+       ========================= */
     header, main, footer{
       margin-left: var(--nav-collapsed);
       transition: margin-left .25s ease;
@@ -362,10 +366,74 @@
     .nav:focus-within ~ footer{
       margin-left: var(--nav-expanded);
     }
-    @media (hover:hover){
-      .nav:hover ~ header,
-      .nav:hover ~ main,
-      .nav:hover ~ footer{margin-left: var(--nav-expanded)}
+
+    /* =========================
+       MOBILE: turn nav into a LEFT DRAWER
+       (still sideways, not bottom)
+       ========================= */
+    @media (max-width: 760px){
+      /* Keep content full width (no permanent left gap) */
+      header, main, footer{margin-left: 0}
+
+      /* collapsed nav becomes a small floating button area */
+      .nav{
+        width: var(--nav-collapsed);
+        background: transparent;
+        border-right: 0;
+        align-items:flex-start;
+        justify-content:flex-start;
+        padding: max(10px, env(safe-area-inset-top)) 0 0 0;
+        pointer-events:none; /* only the button works */
+      }
+
+      .nav-inner{
+        pointer-events:auto;
+        width: var(--nav-collapsed);
+        align-items:flex-start;
+        padding-left: 10px;
+      }
+
+      /* button stays visible */
+      .nav-top{justify-content:flex-start; padding: 0}
+      .nav-toggle{
+        background:#fff;
+      }
+
+      /* Drawer panel (opens from left) */
+      body.nav-open .nav{
+        pointer-events:auto;
+        width: var(--nav-drawer);
+        background:#fff;
+        border-right:2px solid #000;
+      }
+      body.nav-open .nav-inner{
+        width: 100%;
+        align-items:center;
+        padding-left: 0;
+      }
+
+      /* Make labels visible in drawer */
+      body.nav-open .brand span:last-child{opacity:1; transform:none}
+      body.nav-open .pill{width: calc(100% - 28px); justify-content:flex-start; padding-left:14px}
+      body.nav-open .pill span{opacity:1; transform:none}
+
+      /* Remove hover tooltip nonsense on mobile */
+      .pill[data-label]::after{display:none}
+
+      /* Dark overlay behind drawer */
+      .overlay{
+        position:fixed;
+        inset:0;
+        background: rgba(0,0,0,.45);
+        z-index:70;
+        opacity:0;
+        pointer-events:none;
+        transition: opacity .2s ease;
+      }
+      body.nav-open .overlay{
+        opacity:1;
+        pointer-events:auto;
+      }
     }
 
     /* hero */
@@ -613,7 +681,7 @@
       background: #fff;
       color: #000;
       outline:none;
-      font-size: 16px; /* prevents iOS zoom */
+      font-size: 16px;
     }
     input::placeholder, textarea::placeholder{color:#333}
     textarea{min-height: 120px; resize: vertical}
@@ -631,86 +699,28 @@
     .reveal{opacity:0; transform: translateY(12px); transition: opacity .7s ease, transform .7s ease}
     .reveal.show{opacity:1; transform: translateY(0)}
 
-    /* ===== Breakpoints for layout behavior only ===== */
-
-    /* When hero gets tight, stack */
+    /* stack hero on medium screens */
     @media (max-width: 980px){
       .hero{grid-template-columns: 1fr}
     }
 
-    /* Mobile: sidebar -> bottom nav */
-    @media (max-width: 760px){
-      header, main, footer{margin-left: 0}
-      .nav{display:none}
-
-      body{
-        padding-bottom: calc(var(--mnav-h) + env(safe-area-inset-bottom));
-      }
-    }
-
-    /* Ultra small: buttons full width */
+    /* ultra small: buttons full width */
     @media (max-width: 420px){
       .btn{width:100%; justify-content:center}
       .proj .actions .link{width:100%; justify-content:center}
       .statgrid{grid-template-columns: repeat(2, minmax(0, 1fr))}
     }
-
-    /* Mobile bottom nav */
-    .mnav{
-      display:none;
-      position:fixed;
-      left:0; right:0; bottom:0;
-      height: calc(var(--mnav-h) + env(safe-area-inset-bottom));
-      padding-bottom: env(safe-area-inset-bottom);
-      background:#fff;
-      border-top:2px solid #000;
-      z-index:90;
-    }
-    @media (max-width: 760px){
-      .mnav{display:flex}
-    }
-
-    .mnav-inner{
-      width:100%;
-      display:grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      align-items:center;
-      height: var(--mnav-h);
-      padding: 0 10px;
-      gap: 10px;
-    }
-
-    .mnav a{
-      height: 48px;
-      border:2px solid #000;
-      border-radius: 16px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:900;
-      letter-spacing:.2px;
-      background:#fff;
-      color:#000;
-      -webkit-tap-highlight-color: transparent;
-      user-select:none;
-      font-size: var(--text-sm);
-      padding: 0 8px;
-      text-align:center;
-    }
-
-    .mnav a[aria-current="page"]{
-      background:#000;
-      color:#fff;
-    }
   </style>
 </head>
 
 <body>
+  <div class="overlay" aria-hidden="true"></div>
+
   <div class="blob one" aria-hidden="true"></div>
   <div class="blob two" aria-hidden="true"></div>
   <div class="blob three" aria-hidden="true"></div>
 
-  <!-- Desktop/Tablet sidebar nav -->
+  <!-- Sidebar nav stays sideways on mobile too -->
   <nav class="nav" aria-label="Primary navigation">
     <div class="wrap nav-inner">
       <div class="nav-top">
@@ -733,16 +743,6 @@
         <a class="sbtn" href="#" title="Replace with your LinkedIn">in</a>
         <a class="sbtn" href="#" title="Replace with your GitHub">gh</a>
       </div>
-    </div>
-  </nav>
-
-  <!-- Mobile bottom nav -->
-  <nav class="mnav" aria-label="Mobile navigation">
-    <div class="mnav-inner">
-      <a href="#projects">Projects</a>
-      <a href="#skills">Skills</a>
-      <a href="#experience">Experience</a>
-      <a href="#contact">Contact</a>
     </div>
   </nav>
 
@@ -926,7 +926,6 @@
       </div>
     </section>
 
-    <!-- Skills (no proficiency, no bars) -->
     <section id="skills">
       <div class="wrap">
         <div class="section-title">
@@ -1055,8 +1054,15 @@
     }, { threshold: 0.12 });
     revealEls.forEach(el => io.observe(el));
 
-    // Desktop/Tablet: nav open state for touch devices + keyboard
+    // nav open (mobile drawer + desktop manual)
     const navToggle = document.querySelector('.nav-toggle');
+    const overlay = document.querySelector('.overlay');
+
+    const closeNav = () => {
+      document.body.classList.remove('nav-open');
+      navToggle?.setAttribute('aria-expanded', 'false');
+    };
+
     if(navToggle){
       navToggle.addEventListener('click', () => {
         const open = document.body.classList.toggle('nav-open');
@@ -1064,20 +1070,31 @@
       });
     }
 
-    // Active section highlight (desktop sidebar + mobile bottom nav)
+    if(overlay){
+      overlay.addEventListener('click', closeNav);
+    }
+
+    // close drawer when clicking a nav link (mobile)
+    document.querySelectorAll('.pill[href^="#"]').forEach(a => {
+      a.addEventListener('click', () => {
+        if(window.matchMedia('(max-width: 760px)').matches) closeNav();
+      });
+    });
+
+    // close on ESC
+    document.addEventListener('keydown', (e) => {
+      if(e.key === 'Escape') closeNav();
+    });
+
+    // Active section highlight
     const sectionEls = ['projects', 'skills', 'experience', 'contact']
       .map(id => document.getElementById(id))
       .filter(Boolean);
 
     const pillLinks = Array.from(document.querySelectorAll('.pill[href^="#"]'));
-    const mnavLinks = Array.from(document.querySelectorAll('.mnav a[href^="#"]'));
 
     const setActive = (id) => {
       pillLinks.forEach(p => p.classList.toggle('active', p.getAttribute('href') === ('#' + id)));
-      mnavLinks.forEach(a => {
-        const isActive = a.getAttribute('href') === ('#' + id);
-        a.setAttribute('aria-current', isActive ? 'page' : 'false');
-      });
     };
 
     const secObserver = new IntersectionObserver((entries) => {
