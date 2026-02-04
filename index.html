@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,14 +33,11 @@
 
       --gap-1: clamp(10px, 1.6vw, 16px);
       --gap-2: clamp(14px, 2.2vw, 22px);
-      --gap-3: clamp(18px, 3vw, 28px);
 
-      /* Sidebar sizes (always sidebar, even on mobile) */
-      --nav-collapsed: clamp(56px, 7vw, 72px);
-      --nav-expanded: clamp(200px, 72vw, 260px);
-
-      /* On very small phones, nav expands to drawer width */
-      --nav-drawer: min(86vw, 280px);
+      /* Sidebar widths */
+      --nav-collapsed: 64px;       /* only the small button strip */
+      --nav-drawer: min(86vw, 300px);
+      --nav-expanded: 240px;
     }
 
     *{box-sizing:border-box}
@@ -51,11 +49,16 @@
       background: var(--bg);
       color: var(--text);
       line-height:1.65;
-      overflow-x:hidden;
       -webkit-text-size-adjust: 100%;
       text-rendering: optimizeLegibility;
       font-size: var(--text-base);
+      overflow-x: hidden; /* stop sideways scrolling */
+      width: 100%;
     }
+
+    /* extra safety: prevent horizontal overflow */
+    *{max-width:100%}
+    header, main, footer, section, .wrap, .grid, .hero {min-width:0}
 
     a{color:inherit; text-decoration:none}
     img{max-width:100%; height:auto}
@@ -70,11 +73,11 @@
       *{animation:none !important; transition:none !important}
     }
 
-    /* background blobs */
+    /* background blobs (cannot cause sideways scroll) */
     .blob{
       position:absolute;
-      width: clamp(340px, 40vw, 560px);
-      height: clamp(340px, 40vw, 560px);
+      width: clamp(320px, 38vw, 560px);
+      height: clamp(320px, 38vw, 560px);
       border-radius: 999px;
       filter: blur(clamp(42px, 6vw, 60px));
       opacity:.14;
@@ -82,14 +85,16 @@
       transform: translateZ(0);
       animation: float 10s ease-in-out infinite;
       z-index:0;
+      /* keep blobs from pushing layout */
+      overflow: hidden;
     }
-    .blob.one{left: min(-180px, -10vw); top: clamp(60px, 10vh, 140px); background: rgba(0,87,255,.25)}
-    .blob.two{right: min(-220px, -12vw); top: clamp(20px, 6vh, 70px); background: rgba(124,58,237,.20); animation-delay: -3s}
-    .blob.three{left: 8%; bottom: min(-260px, -20vh); background: rgba(0,87,255,.18); animation-delay:-6s}
+    .blob.one{left:-220px; top: clamp(60px, 10vh, 140px); background: rgba(0,87,255,.25)}
+    .blob.two{right:-260px; top: clamp(20px, 6vh, 70px); background: rgba(124,58,237,.20); animation-delay: -3s}
+    .blob.three{left: 4%; bottom:-320px; background: rgba(0,87,255,.18); animation-delay:-6s}
 
     @keyframes float{
       0%,100%{transform: translate(0,0) scale(1)}
-      50%{transform: translate(0,-16px) scale(1.03)}
+      50%{transform: translate(0,-14px) scale(1.03)}
     }
 
     .wrap{
@@ -99,7 +104,26 @@
     }
 
     /* =========================
-       SIDEBAR NAV (ALL SCREENS)
+       OVERLAY (for drawer)
+       ========================= */
+    .overlay{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.45);
+      z-index:70;
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .2s ease;
+    }
+    body.nav-open .overlay{
+      opacity:1;
+      pointer-events:auto;
+    }
+
+    /* =========================
+       NAV: hidden by default on mobile
+       - Desktop: sidebar (collapsed) + hover expand
+       - Mobile: only hamburger button; drawer opens
        ========================= */
     .nav{
       position:fixed;
@@ -110,11 +134,12 @@
       background:#fff;
       border-right:2px solid #000;
       display:flex;
-      align-items:center;
-      justify-content:center;
-      transition: width .25s ease, transform .25s ease;
+      align-items:flex-start;
+      justify-content:flex-start;
       padding-top: env(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-bottom);
+      transition: width .25s ease, transform .25s ease, background .25s ease, border .25s ease;
+      will-change: width, transform;
     }
 
     /* Desktop hover expand */
@@ -126,7 +151,7 @@
       .nav:hover ~ footer{margin-left: var(--nav-expanded)}
     }
 
-    /* Open state (works on mobile via toggle) */
+    /* Open state (manual toggle / focus) */
     body.nav-open .nav,
     .nav:focus-within{
       width: var(--nav-expanded);
@@ -143,30 +168,28 @@
       pointer-events:none;
     }
     body.nav-open .nav::after,
-    .nav:focus-within::after{
-      opacity:1;
-    }
+    .nav:focus-within::after{opacity:1}
 
     .nav-inner{
       display:flex;
       flex-direction:column;
       gap: var(--gap-2);
-      padding: 14px 0;
+      padding: 12px;
       width:100%;
       align-items:center;
       height:100%;
+      min-width:0;
     }
 
     .nav-top{
       width:100%;
       display:flex;
       align-items:center;
-      justify-content:center;
+      justify-content:flex-start;
       gap:10px;
-      padding: 0 12px;
     }
 
-    /* Toggle always visible (needed for mobile) */
+    /* Toggle button always visible */
     .nav-toggle{
       width:42px; height:42px;
       border:2px solid #000;
@@ -182,6 +205,29 @@
     }
     .nav-toggle:hover{background:#000; color:#fff}
 
+    /* Nav content hidden when collapsed */
+    .nav-content{
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      gap: var(--gap-2);
+      align-items:center;
+      opacity:0;
+      transform: translateX(-8px);
+      pointer-events:none;
+      transition: opacity .2s ease, transform .2s ease;
+      min-width:0;
+    }
+
+    /* show content on hover/open/focus */
+    @media (hover:hover){
+      .nav:hover .nav-content{opacity:1; transform:none; pointer-events:auto}
+    }
+    body.nav-open .nav-content,
+    .nav:focus-within .nav-content{
+      opacity:1; transform:none; pointer-events:auto;
+    }
+
     .dot{
       width:10px; height:10px; border-radius:999px;
       background: linear-gradient(135deg, var(--accent), var(--accent2));
@@ -195,24 +241,16 @@
       gap:10px;
       align-items:center;
       padding-top: 6px;
+      width:100%;
     }
     .brand span:last-child{
       font-size: var(--text-sm);
       letter-spacing:.8px;
       color: var(--muted);
-      opacity:0;
-      transform: translateX(-8px);
-      transition: opacity .25s ease, transform .25s ease;
       text-align:center;
       font-weight:900;
       line-height:1.15;
       padding: 0 10px;
-    }
-
-    body.nav-open .brand span:last-child,
-    .nav:focus-within .brand span:last-child{opacity:1; transform: translateX(0)}
-    @media (hover:hover){
-      .nav:hover .brand span:last-child{opacity:1; transform: translateX(0)}
     }
 
     .links{
@@ -221,23 +259,26 @@
       gap: var(--gap-1);
       width:100%;
       align-items:center;
-      padding-top: 6px;
+      padding-top: 4px;
     }
 
     .pill{
       position:relative;
-      width:44px;
+      width:100%;
+      max-width: 210px;
       height:44px;
       background:#fff;
       border:2px solid #000;
       border-radius: 16px;
       display:flex;
       align-items:center;
-      justify-content:center;
-      transition: width .2s ease, background .2s ease, color .2s ease;
+      justify-content:flex-start;
+      padding-left:14px;
+      transition: background .2s ease, color .2s ease;
       color:#000;
       font-weight:900;
       -webkit-tap-highlight-color: transparent;
+      min-width:0;
     }
 
     .pill::before{
@@ -245,68 +286,24 @@
       width:9px;
       height:9px;
       background:#000;
+      margin-right:10px;
+      flex:0 0 auto;
       transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
     }
 
     .pill span{
-      position:absolute;
-      left:58px;
-      white-space:nowrap;
       font-size: var(--text-sm);
       color:#000;
-      opacity:0;
-      transform: translateX(-8px);
-      transition: opacity .25s ease, transform .25s ease, color .2s ease;
-    }
-
-    body.nav-open .pill,
-    .nav:focus-within .pill{
-      width: clamp(170px, 20vw, 200px);
-      justify-content:flex-start;
-      padding-left:14px;
-    }
-    body.nav-open .pill span,
-    .nav:focus-within .pill span{opacity:1; transform: translateX(0)}
-    @media (hover:hover){
-      .nav:hover .pill{
-        width: clamp(170px, 20vw, 200px);
-        justify-content:flex-start;
-        padding-left:14px;
-      }
-      .nav:hover .pill span{opacity:1; transform: translateX(0)}
-    }
-
-    /* tooltip when collapsed */
-    .pill[data-label]::after{
-      content: attr(data-label);
-      position:absolute;
-      left: 58px;
-      top: 50%;
-      transform: translateY(-50%) translateX(-8px);
-      padding: 8px 10px;
-      border-radius: 12px;
-      background:#000;
-      border: 2px solid #000;
-      color:#fff;
-      font-weight:900;
-      font-size: .86rem;
-      letter-spacing:.2px;
-      opacity:0;
-      pointer-events:none;
-      transition: opacity .18s ease, transform .18s ease;
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
       white-space:nowrap;
-    }
-    @media (hover:hover){
-      body:not(.nav-open) .pill:hover::after{
-        opacity:1;
-        transform: translateY(-50%) translateX(0);
-      }
     }
 
     .pill:hover{background:#000; color:#fff}
     .pill:hover::before{
       background:#fff;
-      transform: scale(1.15);
+      transform: scale(1.12);
       box-shadow: 0 0 0 8px rgba(0,87,255,.16);
     }
     .pill:hover span{color:#fff}
@@ -322,10 +319,12 @@
     .nav-social{
       margin-top:auto;
       display:flex;
-      flex-direction:column;
       gap:10px;
       align-items:center;
-      padding-bottom: 14px;
+      justify-content:center;
+      flex-wrap:wrap;
+      width:100%;
+      padding-bottom: 6px;
     }
     .sbtn{
       width:44px;
@@ -342,6 +341,7 @@
       transition: transform .2s ease, background .2s ease, color .2s ease;
       text-transform: lowercase;
       user-select:none;
+      flex:0 0 auto;
     }
     .sbtn:hover{
       transform: translateY(-2px);
@@ -349,14 +349,13 @@
       color:#fff;
     }
 
-    /* =========================
-       CONTENT OFFSET (ALL SCREENS)
-       ========================= */
+    /* Content offset on desktop/tablet */
     header, main, footer{
       margin-left: var(--nav-collapsed);
       transition: margin-left .25s ease;
       position:relative;
       z-index:1;
+      min-width:0;
     }
     body.nav-open header,
     body.nav-open main,
@@ -368,38 +367,30 @@
     }
 
     /* =========================
-       MOBILE: turn nav into a LEFT DRAWER
-       (still sideways, not bottom)
+       MOBILE DRAWER BEHAVIOR
+       - nav is "hidden": only small button strip
+       - open: drawer overlays content (no margin push)
        ========================= */
     @media (max-width: 760px){
-      /* Keep content full width (no permanent left gap) */
       header, main, footer{margin-left: 0}
 
-      /* collapsed nav becomes a small floating button area */
       .nav{
         width: var(--nav-collapsed);
         background: transparent;
         border-right: 0;
-        align-items:flex-start;
-        justify-content:flex-start;
-        padding: max(10px, env(safe-area-inset-top)) 0 0 0;
-        pointer-events:none; /* only the button works */
+        pointer-events:none;
       }
 
       .nav-inner{
         pointer-events:auto;
         width: var(--nav-collapsed);
+        padding: 12px 0 0 12px;
         align-items:flex-start;
-        padding-left: 10px;
       }
 
-      /* button stays visible */
-      .nav-top{justify-content:flex-start; padding: 0}
-      .nav-toggle{
-        background:#fff;
-      }
+      /* keep only button visible while closed */
+      .nav-content{display:none}
 
-      /* Drawer panel (opens from left) */
       body.nav-open .nav{
         pointer-events:auto;
         width: var(--nav-drawer);
@@ -407,32 +398,12 @@
         border-right:2px solid #000;
       }
       body.nav-open .nav-inner{
-        width: 100%;
+        width:100%;
+        padding: 12px;
         align-items:center;
-        padding-left: 0;
       }
-
-      /* Make labels visible in drawer */
-      body.nav-open .brand span:last-child{opacity:1; transform:none}
-      body.nav-open .pill{width: calc(100% - 28px); justify-content:flex-start; padding-left:14px}
-      body.nav-open .pill span{opacity:1; transform:none}
-
-      /* Remove hover tooltip nonsense on mobile */
-      .pill[data-label]::after{display:none}
-
-      /* Dark overlay behind drawer */
-      .overlay{
-        position:fixed;
-        inset:0;
-        background: rgba(0,0,0,.45);
-        z-index:70;
-        opacity:0;
-        pointer-events:none;
-        transition: opacity .2s ease;
-      }
-      body.nav-open .overlay{
-        opacity:1;
-        pointer-events:auto;
+      body.nav-open .nav-content{
+        display:flex;
       }
     }
 
@@ -444,6 +415,7 @@
       grid-template-columns: 1.25fr .75fr;
       gap: var(--gap-2);
       align-items:stretch;
+      min-width:0;
     }
 
     .glass{
@@ -451,6 +423,7 @@
       border:2px solid #000;
       border-radius: var(--radius);
       color:#000;
+      min-width:0;
     }
 
     .hero-card{padding: clamp(18px, 2.6vw, 26px)}
@@ -464,6 +437,7 @@
       margin-bottom: 10px;
       flex-wrap:wrap;
       font-weight:800;
+      min-width:0;
     }
 
     .kicker .badge{
@@ -474,6 +448,7 @@
       color:#fff;
       font-weight:900;
       letter-spacing:.2px;
+      flex:0 0 auto;
     }
 
     h1{
@@ -481,6 +456,7 @@
       line-height:1.08;
       margin: 6px 0 10px;
       letter-spacing: -0.6px;
+      word-break: break-word;
     }
 
     .sub{
@@ -488,6 +464,7 @@
       max-width: 60ch;
       margin: 0 0 18px;
       font-size: var(--text-base);
+      word-break: break-word;
     }
 
     .cta-row{display:flex; gap: var(--gap-1); flex-wrap:wrap; margin-top: 14px}
@@ -505,18 +482,15 @@
       font-weight:900;
       cursor:pointer;
       font-size: var(--text-sm);
+      min-width:0;
     }
     .btn:hover{transform: translateY(-2px); background:#000; color:#fff}
-    .btn.primary{
-      background:#000;
-      color:#fff;
-      border-color:#000;
-    }
+    .btn.primary{background:#000; color:#fff; border-color:#000}
     .btn.primary:hover{background:#111}
 
-    .mini{padding: clamp(16px, 2.2vw, 22px); display:flex; flex-direction:column; gap: 14px}
+    .mini{padding: clamp(16px, 2.2vw, 22px); display:flex; flex-direction:column; gap: 14px; min-width:0}
 
-    .profile{display:flex; gap: 12px; align-items:center}
+    .profile{display:flex; gap: 12px; align-items:center; min-width:0}
     .avatar{
       width: clamp(50px, 7vw, 58px);
       height: clamp(50px, 7vw, 58px);
@@ -525,7 +499,7 @@
       border: 2px solid #000;
       flex:0 0 auto;
     }
-    .who{display:flex; flex-direction:column}
+    .who{display:flex; flex-direction:column; min-width:0}
     .who b{font-size: var(--text-base)}
     .who span{color:var(--muted); font-size: var(--text-sm); font-weight:700}
 
@@ -533,6 +507,7 @@
       display:grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
+      min-width:0;
     }
     .stat{
       background:#fff;
@@ -540,7 +515,7 @@
       border-radius: 16px;
       padding: 12px;
       text-align:center;
-      min-width: 0;
+      min-width:0;
     }
     .stat .num{font-size: clamp(1.05rem, 2.2vw, 1.25rem); font-weight:900}
     .stat .lbl{font-size: .78rem; color:var(--muted); font-weight:800}
@@ -549,6 +524,7 @@
     section{
       padding: clamp(32px, 5vw, 48px) 0;
       border-top: 2px solid #000;
+      min-width:0;
     }
 
     .section-title{
@@ -558,6 +534,7 @@
       gap: var(--gap-1);
       margin-bottom: 18px;
       flex-wrap:wrap;
+      min-width:0;
     }
 
     h2{
@@ -566,10 +543,11 @@
       font-weight: 900;
       letter-spacing: 0.5px;
       text-transform: uppercase;
+      word-break: break-word;
     }
     .hint{color: var(--muted); font-size: var(--text-sm); font-weight:700}
 
-    .grid{display:flex; flex-direction:column; gap: var(--gap-2)}
+    .grid{display:flex; flex-direction:column; gap: var(--gap-2); min-width:0}
 
     .card{
       padding: clamp(16px, 2.4vw, 22px);
@@ -577,17 +555,20 @@
       border:2px solid #000;
       border-radius: var(--radius);
       color:#000;
+      min-width:0;
     }
     .card h3{
       margin:0 0 10px 0;
       font-size: var(--h3);
       font-weight:900;
+      word-break: break-word;
     }
     .card p{
       margin:0 0 12px 0;
       font-size: var(--text-base);
       line-height:1.7;
       color:#111;
+      word-break: break-word;
     }
 
     .tagrow{
@@ -595,6 +576,7 @@
       display:flex;
       flex-wrap:wrap;
       gap:8px;
+      min-width:0;
     }
     .tag{
       font-size: .85rem;
@@ -604,9 +586,13 @@
       border: 2px solid #000;
       color:#000;
       font-weight:900;
+      max-width: 100%;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
     }
 
-    .proj{width:100%; position:relative}
+    .proj{width:100%; position:relative; min-width:0}
     .proj:before{
       content:"";
       position:absolute;
@@ -626,6 +612,7 @@
       align-items:center;
       gap:12px;
       flex-wrap:wrap;
+      min-width:0;
     }
     .proj .meta .type{
       font-size:.82rem;
@@ -642,6 +629,7 @@
       display:flex;
       gap:10px;
       flex-wrap:wrap;
+      min-width:0;
     }
     .link{
       display:inline-flex;
@@ -655,23 +643,23 @@
       color:#000;
       transition: transform .2s ease, background .2s ease, color .2s ease;
       font-size: var(--text-sm);
+      min-width:0;
     }
     .link:hover{transform: translateY(-2px); background:#000; color:#fff}
 
-    /* timeline items */
-    .timeline{width:100%}
+    .timeline{width:100%; min-width:0}
     .item{
       padding: 12px 12px;
       border-radius: 18px;
       border:2px solid #000;
       background: #fff;
-      margin-top: 12px
+      margin-top: 12px;
+      min-width:0;
     }
-    .item b{display:block; font-weight:900}
-    .item span{display:block; color:var(--muted); font-size: var(--text-sm); font-weight:700}
+    .item b{display:block; font-weight:900; word-break: break-word}
+    .item span{display:block; color:var(--muted); font-size: var(--text-sm); font-weight:700; word-break: break-word}
 
-    /* contact */
-    .contact{display:flex; flex-direction:column; gap: var(--gap-2)}
+    .contact{display:flex; flex-direction:column; gap: var(--gap-2); min-width:0}
     .field{display:flex; flex-direction:column; gap:8px; margin-top: 12px}
     input, textarea{
       width:100%;
@@ -681,7 +669,8 @@
       background: #fff;
       color: #000;
       outline:none;
-      font-size: 16px;
+      font-size: 16px; /* prevents iOS zoom */
+      min-width:0;
     }
     input::placeholder, textarea::placeholder{color:#333}
     textarea{min-height: 120px; resize: vertical}
@@ -693,18 +682,16 @@
       background: #fff;
       font-weight:700;
       font-size: var(--text-sm);
+      min-width:0;
     }
 
-    /* reveal animation */
     .reveal{opacity:0; transform: translateY(12px); transition: opacity .7s ease, transform .7s ease}
     .reveal.show{opacity:1; transform: translateY(0)}
 
-    /* stack hero on medium screens */
     @media (max-width: 980px){
       .hero{grid-template-columns: 1fr}
     }
 
-    /* ultra small: buttons full width */
     @media (max-width: 420px){
       .btn{width:100%; justify-content:center}
       .proj .actions .link{width:100%; justify-content:center}
@@ -720,28 +707,30 @@
   <div class="blob two" aria-hidden="true"></div>
   <div class="blob three" aria-hidden="true"></div>
 
-  <!-- Sidebar nav stays sideways on mobile too -->
+  <!-- Side nav (mobile: hidden except button) -->
   <nav class="nav" aria-label="Primary navigation">
-    <div class="wrap nav-inner">
+    <div class="nav-inner">
       <div class="nav-top">
         <button class="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">≡</button>
       </div>
 
-      <a class="brand" href="#top" aria-label="Go to top">
-        <span class="dot"></span>
-        <span>Shubham Navik</span>
-      </a>
+      <div class="nav-content">
+        <a class="brand" href="#top" aria-label="Go to top">
+          <span class="dot"></span>
+          <span>Shubham Navik</span>
+        </a>
 
-      <div class="links">
-        <a class="pill" href="#projects" data-label="Projects"><span>Projects</span></a>
-        <a class="pill" href="#skills" data-label="Skills"><span>Skills</span></a>
-        <a class="pill" href="#experience" data-label="Experience"><span>Experience</span></a>
-        <a class="pill" href="#contact" data-label="Contact"><span>Contact</span></a>
-      </div>
+        <div class="links">
+          <a class="pill" href="#projects"><span>Projects</span></a>
+          <a class="pill" href="#skills"><span>Skills</span></a>
+          <a class="pill" href="#experience"><span>Experience</span></a>
+          <a class="pill" href="#contact"><span>Contact</span></a>
+        </div>
 
-      <div class="nav-social" aria-label="Social links">
-        <a class="sbtn" href="#" title="Replace with your LinkedIn">in</a>
-        <a class="sbtn" href="#" title="Replace with your GitHub">gh</a>
+        <div class="nav-social" aria-label="Social links">
+          <a class="sbtn" href="#" title="Replace with your LinkedIn">in</a>
+          <a class="sbtn" href="#" title="Replace with your GitHub">gh</a>
+        </div>
       </div>
     </div>
   </nav>
@@ -1054,7 +1043,7 @@
     }, { threshold: 0.12 });
     revealEls.forEach(el => io.observe(el));
 
-    // nav open (mobile drawer + desktop manual)
+    // nav open (mobile drawer)
     const navToggle = document.querySelector('.nav-toggle');
     const overlay = document.querySelector('.overlay');
 
@@ -1107,3 +1096,4 @@
   </script>
 </body>
 </html>
+```
